@@ -77,7 +77,7 @@ function WaitlistModal({ onClose }: { onClose: () => void }) {
 
                 {/* WA Button */}
                 <a
-                    href="https://wa.me/1234567890?text=Hi%2C%20I%27d%20like%20to%20join%20the%20StudioShot%20waitlist!"
+                    href="https://wa.me/919288052626?text=Hi%2C%20I%27d%20like%20to%20join%20the%20StudioShot%20waitlist!"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-full bg-[#25D366] px-6 h-12 text-[14px] font-semibold text-white cursor-pointer transition-all duration-200 hover:bg-[#20BD5A] hover:shadow-[0_4px_16px_rgba(37,211,102,0.3)] active:scale-[0.98]"
