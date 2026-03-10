@@ -1,4 +1,7 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
+import { useWaitlist } from "@/components/waitlist-modal";
 import { Check } from "lucide-react";
 
 const plans = [
@@ -53,6 +56,8 @@ const plans = [
 ];
 
 export function Pricing() {
+    const { openModal } = useWaitlist();
+
     return (
         <section id="pricing" className="py-24 md:py-32 bg-neutral-50/40">
             <div className="mx-auto max-w-6xl px-6">
@@ -78,8 +83,8 @@ export function Pricing() {
                         <div
                             key={plan.name}
                             className={`relative flex flex-col rounded-2xl border bg-white p-7 transition-all duration-500 ${plan.popular
-                                ? "border-primary/70 shadow-[0_8px_30px_rgba(249,115,22,0.1)] md:scale-[1.03] md:-my-2"
-                                : "border-black/[0.05] hover:border-black/[0.08] hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)]"
+                                    ? "border-primary/70 shadow-[0_8px_30px_rgba(249,115,22,0.1)] md:scale-[1.03] md:-my-2"
+                                    : "border-black/[0.05] hover:border-black/[0.08] hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)]"
                                 }`}
                         >
                             {plan.popular && (
@@ -125,9 +130,10 @@ export function Pricing() {
                             <Button
                                 variant={plan.variant}
                                 className={`mt-7 w-full rounded-full h-10 text-[13px] font-semibold ${plan.popular
-                                    ? "shadow-[0_2px_8px_rgba(249,115,22,0.18)] hover:shadow-[0_4px_12px_rgba(249,115,22,0.25)]"
-                                    : "border-black/[0.08] hover:bg-neutral-50"
+                                        ? "shadow-[0_2px_8px_rgba(249,115,22,0.18)] hover:shadow-[0_4px_12px_rgba(249,115,22,0.25)]"
+                                        : "border-black/[0.08] hover:bg-neutral-50"
                                     }`}
+                                onClick={openModal}
                             >
                                 {plan.cta}
                             </Button>

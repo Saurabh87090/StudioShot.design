@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useWaitlist } from "@/components/waitlist-modal";
 import { ArrowRight, ArrowLeft, Sparkles, TrendingUp } from "lucide-react";
 
 const platforms = [
@@ -23,6 +24,7 @@ const stats = [
 
 export function Hero() {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const { openModal } = useWaitlist();
 
     const scroll = (direction: "left" | "right") => {
         if (scrollRef.current) {
@@ -87,6 +89,7 @@ export function Hero() {
                     <Button
                         size="lg"
                         className="rounded-full px-7 h-11 text-[14px] font-semibold gap-2 shadow-[0_2px_8px_rgba(249,115,22,0.2)] hover:shadow-[0_4px_16px_rgba(249,115,22,0.3)]"
+                        onClick={openModal}
                     >
                         Transform a Photo Free
                         <ArrowRight className="size-4" />

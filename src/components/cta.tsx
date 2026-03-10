@@ -1,7 +1,12 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
+import { useWaitlist } from "@/components/waitlist-modal";
 import { ArrowRight } from "lucide-react";
 
 export function CTA() {
+    const { openModal } = useWaitlist();
+
     return (
         <section className="py-24 md:py-32 relative overflow-hidden">
             <div className="pointer-events-none absolute inset-0">
@@ -22,6 +27,7 @@ export function CTA() {
                     <Button
                         size="lg"
                         className="mt-8 rounded-full px-8 h-12 text-[14px] font-semibold gap-2 shadow-[0_2px_8px_rgba(249,115,22,0.2)] hover:shadow-[0_4px_16px_rgba(249,115,22,0.3)]"
+                        onClick={openModal}
                     >
                         Transform Your First Photo — Free
                         <ArrowRight className="size-4" />

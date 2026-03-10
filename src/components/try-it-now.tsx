@@ -1,7 +1,12 @@
+"use client";
+
 import { Upload, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useWaitlist } from "@/components/waitlist-modal";
 
 export function TryItNow() {
+    const { openModal } = useWaitlist();
+
     return (
         <section id="try-it-now" className="py-24 md:py-32">
             <div className="mx-auto max-w-6xl px-6">
@@ -29,7 +34,10 @@ export function TryItNow() {
                             {/* Upload area */}
                             <div className="border-b border-black/[0.04] md:border-b-0 md:border-r p-10 flex flex-col items-center justify-center min-h-[380px]">
                                 <div className="flex flex-col items-center text-center">
-                                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl border-[1.5px] border-dashed border-black/[0.1] bg-neutral-50/50 transition-colors duration-300 hover:border-black/[0.15] hover:bg-neutral-50 cursor-pointer">
+                                    <div
+                                        className="flex h-16 w-16 items-center justify-center rounded-2xl border-[1.5px] border-dashed border-black/[0.1] bg-neutral-50/50 transition-colors duration-300 hover:border-black/[0.15] hover:bg-neutral-50 cursor-pointer"
+                                        onClick={openModal}
+                                    >
                                         <Upload className="size-5 text-muted-foreground/40" strokeWidth={1.5} />
                                     </div>
                                     <p className="mt-5 text-[13px] text-muted-foreground/60">
@@ -38,6 +46,7 @@ export function TryItNow() {
                                     <Button
                                         variant="default"
                                         className="mt-5 rounded-full px-6 h-10 text-[13px] font-semibold gap-2 shadow-[0_2px_8px_rgba(249,115,22,0.18)] hover:shadow-[0_4px_12px_rgba(249,115,22,0.25)]"
+                                        onClick={openModal}
                                     >
                                         <Upload className="size-3.5" />
                                         Upload Image

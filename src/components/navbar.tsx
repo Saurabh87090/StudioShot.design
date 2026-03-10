@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useWaitlist } from "@/components/waitlist-modal";
 import { Menu, X } from "lucide-react";
 
 export function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const { openModal } = useWaitlist();
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 16);
@@ -18,8 +20,8 @@ export function Navbar() {
     return (
         <header
             className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
-                ? "bg-white/85 backdrop-blur-2xl border-b border-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
-                : "bg-transparent"
+                    ? "bg-white/85 backdrop-blur-2xl border-b border-black/[0.04] shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                    : "bg-transparent"
                 }`}
         >
             <div className="mx-auto flex h-[60px] max-w-6xl items-center justify-between px-6">
@@ -54,13 +56,15 @@ export function Navbar() {
                     <Button
                         variant="default"
                         className="rounded-full px-5 text-[13px] font-semibold h-[34px] shadow-none"
+                        onClick={openModal}
                     >
                         Try Free
                     </Button>
                 </div>
 
                 <button
-                    className="md:hidden p-2 rounded-lg hover:bg-black/[0.03] transition-colors"
+                    type="button"
+                    className="md:hidden p-2 rounded-lg hover:bg-black/[0.03] transition-colors cursor-pointer"
                     onClick={() => setMobileOpen(!mobileOpen)}
                 >
                     {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -83,6 +87,10 @@ export function Navbar() {
                         <Button
                             variant="default"
                             className="rounded-full text-[13px] font-semibold mt-2 w-full h-10"
+                            onClick={() => {
+                                setMobileOpen(false);
+                                openModal();
+                            }}
                         >
                             Try Free
                         </Button>
