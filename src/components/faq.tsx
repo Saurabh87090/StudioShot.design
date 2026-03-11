@@ -76,18 +76,16 @@ export function FAQ() {
                                     {faq.question}
                                 </span>
                                 <ChevronDown
-                                    className={`size-4 shrink-0 text-muted-foreground/50 transition-transform duration-300 ${
-                                        openIndex === i ? "rotate-180" : ""
-                                    }`}
+                                    className={`size-4 shrink-0 text-muted-foreground/50 transition-transform duration-300 ${openIndex === i ? "rotate-180" : ""
+                                        }`}
                                     strokeWidth={2}
                                 />
                             </button>
                             <div
-                                className={`overflow-hidden transition-all duration-300 ${
-                                    openIndex === i
+                                className={`overflow-hidden transition-all duration-300 ${openIndex === i
                                         ? "max-h-96 pb-5 opacity-100"
                                         : "max-h-0 pb-0 opacity-0"
-                                }`}
+                                    }`}
                             >
                                 <p className="text-[14px] leading-[1.7] text-muted-foreground pr-8">
                                     {faq.answer}
