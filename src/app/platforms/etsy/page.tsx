@@ -3,7 +3,8 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { PageShell } from "@/components/page-shell";
 import { WaitlistCTAButton } from "@/components/waitlist-button";
-import { Check } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
     title: "StudioShot for Etsy Sellers",
