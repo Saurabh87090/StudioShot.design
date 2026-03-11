@@ -4,23 +4,23 @@ const steps = [
     {
         number: "01",
         icon: Upload,
-        title: "Upload Your Photo",
+        title: "Snap With Your Phone",
         description:
-            "Take a photo of your product with your phone camera. Any angle, any lighting — our AI handles the rest. No special setup required.",
+            "No lightbox, no DSLR, no photo studio. Just take a quick shot of your product with your phone camera — any angle, any lighting condition works.",
     },
     {
         number: "02",
         icon: Cpu,
-        title: "AI Transforms It",
+        title: "AI Does the Heavy Lifting",
         description:
-            "Our model removes the background, corrects exposure and color, generates professional soft shadows, and enhances product clarity.",
+            "In under 3 seconds, StudioShot removes the background, fixes lighting and color balance, adds professional shadows, and outputs a clean, marketplace-ready image.",
     },
     {
         number: "03",
         icon: Download,
-        title: "Download & List",
+        title: "List & Start Selling",
         description:
-            "Download your studio-quality PNG in seconds. Drop it directly into Amazon Seller Central, Shopify, Etsy, or any platform.",
+            "Download your high-res PNG and upload it directly to Amazon, Shopify, Etsy, or any marketplace. Pure white backgrounds that pass Amazon compliance — guaranteed.",
     },
 ];
 
@@ -31,17 +31,17 @@ export function HowItWorks() {
                 {/* Section header */}
                 <div className="mx-auto max-w-2xl text-center">
                     <p className="text-[12px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
-                        Process
+                        How It Works
                     </p>
                     <h2 className="text-[2.25rem] font-bold tracking-[-0.03em] md:text-[3rem] md:leading-[1.05]">
-                        How It Works
+                        From Phone Snap to Listing-Ready in Seconds
                     </h2>
                     <p className="mt-5 text-[17px] leading-relaxed text-foreground">
-                        Three steps. Zero complexity.
+                        Three steps. Zero editing skills required.
                     </p>
                     <p className="mt-3 text-[15px] text-muted-foreground max-w-md mx-auto leading-relaxed">
-                        StudioShot is built to get out of your way. No accounts, no learning curve, no
-                        editing skills needed.
+                        No Photoshop, no expensive photographers, no 10-week turnaround.
+                        Just upload and go.
                     </p>
                 </div>
 

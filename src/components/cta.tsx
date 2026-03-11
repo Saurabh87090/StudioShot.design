@@ -16,20 +16,20 @@ export function CTA() {
             <div className="relative mx-auto max-w-6xl px-6">
                 <div className="mx-auto max-w-3xl text-center">
                     <h2 className="text-[2rem] font-bold tracking-[-0.03em] md:text-[2.75rem] md:leading-[1.05]">
-                        Better photos. More sales.
+                        Your Competitors Have
                         <br />
-                        <span className="text-primary/25">Today.</span>
+                        <span className="text-primary/25">Better Product Photos. Fix That.</span>
                     </h2>
                     <p className="mx-auto mt-5 max-w-md text-[15px] leading-[1.7] text-muted-foreground/80">
-                        Join thousands of sellers who ditched the photo studio and got
-                        better results in seconds.
+                        Thousands of Amazon, Shopify, and Etsy sellers already switched from
+                        expensive studios to StudioShot. Start free — see results in seconds.
                     </p>
                     <Button
                         size="lg"
                         className="mt-8 rounded-full px-8 h-12 text-[14px] font-semibold gap-2 shadow-[0_2px_8px_rgba(249,115,22,0.2)] hover:shadow-[0_4px_16px_rgba(249,115,22,0.3)]"
                         onClick={openModal}
                     >
-                        Transform Your First Photo — Free
+                        Try It Free — No Signup Required
                         <ArrowRight className="size-4" />
                     </Button>
                 </div>

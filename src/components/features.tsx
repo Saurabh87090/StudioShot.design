@@ -10,39 +10,39 @@ import {
 const features = [
     {
         icon: Scissors,
-        title: "Background Removal",
+        title: "One-Click Background Removal",
         description:
-            "Precision edge detection removes backgrounds on any product — shoes, electronics, jewelry, food — with sub-pixel accuracy.",
+            "No more hours in Photoshop or paying per image on remove.bg. Get pixel-perfect cutouts on any product — shoes, jewelry, electronics, food — instantly.",
     },
     {
         icon: Sun,
-        title: "Studio Lighting",
+        title: "AI Studio Lighting Fix",
         description:
-            "AI reconstructs professional studio lighting conditions — eliminating harsh shadows, correcting color temperature, and boosting clarity.",
+            "Harsh phone flash? Dim kitchen lighting? Our AI corrects exposure, color temperature, and shadows to replicate a professional studio setup automatically.",
     },
     {
         icon: Monitor,
-        title: "Platform-Ready Output",
+        title: "Amazon, Shopify & Etsy Ready",
         description:
-            "Output meets every major marketplace spec: Amazon main image standards, Shopify square format, Etsy listing requirements.",
+            "Exports meet strict marketplace image requirements out of the box — Amazon pure-white main images, Shopify square format, Etsy listing dimensions. No more rejected listings.",
     },
     {
         icon: CircleDot,
-        title: "Soft Shadow Generation",
+        title: "Natural Shadow Generation",
         description:
-            "Natural drop shadows are added automatically, grounding the product and giving it a premium, professionally photographed appearance.",
+            "Automatically adds realistic drop shadows that ground your product and give it that premium, professionally photographed look buyers trust.",
     },
     {
         icon: Palette,
-        title: "Color Fidelity",
+        title: "True-to-Life Colors",
         description:
-            "Product colors are preserved and enhanced, not altered. What you sell is exactly what the buyer sees — accurate hues at their truest.",
+            "Colors stay accurate — no washed-out whites or shifted hues. What you sell is exactly what the buyer sees. Reduce returns caused by color mismatches.",
     },
     {
         icon: Package,
-        title: "Any Product Category",
+        title: "Works for Every Product Category",
         description:
-            "Trained on millions of e-commerce images across apparel, accessories, home goods, electronics, food, and more.",
+            "Apparel, accessories, home goods, electronics, food, handmade crafts — trained on millions of e-commerce images so it handles whatever you sell.",
     },
 ];
 
@@ -53,17 +53,19 @@ export function Features() {
                 {/* Section header */}
                 <div className="mx-auto max-w-2xl text-center">
                     <p className="text-[12px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
-                        Capabilities
+                        Why Sellers Switch to StudioShot
                     </p>
                     <h2 className="text-[2.25rem] font-bold tracking-[-0.03em] md:text-[3rem] md:leading-[1.05]">
-                        Features
+                        Everything a Photo Studio Does.
+                        <br />
+                        <span className="text-muted-foreground/40">At a Fraction of the Cost.</span>
                     </h2>
                     <p className="mt-5 text-[17px] leading-relaxed text-foreground">
-                        Everything a studio does. Nothing you don&apos;t need.
+                        Skip the $40&ndash;$70 per photo studio fees and 10-week wait times.
                     </p>
                     <p className="mt-3 text-[15px] text-muted-foreground max-w-md mx-auto leading-relaxed">
-                        Every step of the professional product photography process — from
-                        lighting to export — handled automatically.
+                        Background removal, lighting correction, shadow generation, and
+                        platform-compliant export — all handled in one click.
                     </p>
                 </div>
 

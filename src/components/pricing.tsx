@@ -9,11 +9,11 @@ const plans = [
         name: "Starter",
         price: "Free",
         period: "forever",
-        description: "For individuals testing the waters.",
+        description: "Perfect for testing before you commit. No credit card needed.",
         features: [
             "5 images per month",
             "Standard resolution export",
-            "White background only",
+            "Pure white background",
             "JPG download",
         ],
         cta: "Start Free",
@@ -24,15 +24,15 @@ const plans = [
         name: "Pro",
         price: "$19",
         period: "per month",
-        description: "For active sellers on one or two platforms.",
+        description: "For active sellers — replaces $600+/mo in photography costs.",
         features: [
             "150 images per month",
             "High resolution PNG export",
-            "Custom background color",
+            "Custom background colors",
             "Batch upload (up to 10)",
             "Priority processing",
         ],
-        cta: "Start Pro Trial",
+        cta: "Start 7-Day Free Trial",
         variant: "default" as const,
         popular: true,
     },
@@ -40,11 +40,11 @@ const plans = [
         name: "Business",
         price: "$49",
         period: "per month",
-        description: "For teams managing large product catalogs.",
+        description: "For teams with large catalogs — process thousands of SKUs.",
         features: [
             "Unlimited images",
-            "Max resolution 4K export",
-            "API access",
+            "4K resolution export",
+            "API access for automation",
             "Batch upload (up to 100)",
             "Team seats (3 included)",
             "Dedicated support",
@@ -64,16 +64,18 @@ export function Pricing() {
                 {/* Section header */}
                 <div className="mx-auto max-w-2xl text-center">
                     <p className="text-[12px] font-semibold tracking-[0.1em] uppercase text-primary mb-4">
-                        Plans
+                        Pricing
                     </p>
                     <h2 className="text-[2.25rem] font-bold tracking-[-0.03em] md:text-[3rem] md:leading-[1.05]">
-                        Pricing
+                        One Photo Costs $25&ndash;$50 at a Studio.
+                        <br />
+                        <span className="text-muted-foreground/40">We Do It for Pennies.</span>
                     </h2>
                     <p className="mt-5 text-[17px] leading-relaxed text-foreground">
-                        Simple pricing. No surprises.
+                        Simple pricing. Cancel anytime.
                     </p>
                     <p className="mt-3 text-[15px] text-muted-foreground">
-                        Pay for what you use. No annual contracts, no hidden fees.
+                        Start free. No credit card required. Upgrade only when you need more.
                     </p>
                 </div>
 

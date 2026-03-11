@@ -40,9 +40,11 @@ export function Footer() {
                             <span className="text-[15px] font-semibold tracking-[-0.01em]">StudioShot</span>
                         </Link>
                         <p className="mt-4 max-w-[240px] text-[14px] leading-[1.7] text-foreground/60">
-                            Professional product photography.
+                            AI-powered product photography
                             <br />
-                            No studio required.
+                            for e-commerce sellers.
+                            <br />
+                            No studio, no photographer needed.
                         </p>
                     </div>
 
@@ -110,7 +112,7 @@ export function Footer() {
                         &copy; 2026 StudioShot. All rights reserved.
                     </p>
                     <p className="text-[13px] text-foreground/35">
-                        Built for solopreneurs and small business owners.
+                        Built for Amazon, Shopify &amp; Etsy sellers who refuse to overpay for product photos.
                     </p>
                 </div>
             </div>

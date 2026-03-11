@@ -13,17 +13,17 @@ export function TryItNow() {
                 {/* Section header */}
                 <div className="mx-auto max-w-2xl text-center">
                     <p className="text-[11px] font-semibold tracking-[0.1em] uppercase text-primary/60 mb-4">
-                        Demo
+                        See It In Action
                     </p>
                     <h2 className="text-[2rem] font-bold tracking-[-0.03em] md:text-[2.75rem] md:leading-[1.05]">
-                        Try It Now
+                        See the Difference Yourself
                     </h2>
                     <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground/80">
-                        Your studio is ready.
+                        Upload any product photo. Get a studio-quality result in seconds.
                     </p>
                     <p className="mt-1.5 text-[13px] text-muted-foreground/50 max-w-md mx-auto leading-relaxed">
-                        Upload a product photo and see the transformation happen in real
-                        time — no account required.
+                        No account, no credit card, no download required.
+                        Just drag, drop, and download.
                     </p>
                 </div>
 

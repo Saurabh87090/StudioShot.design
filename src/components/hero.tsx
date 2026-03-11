@@ -17,9 +17,9 @@ const platforms = [
 ];
 
 const stats = [
-    { value: "2.4s", label: "Avg. processing" },
-    { value: "98%", label: "Background accuracy" },
-    { value: "40k+", label: "Photos processed" },
+    { value: "2.4s", label: "Avg. processing time" },
+    { value: "99.8%", label: "Pure-white accuracy" },
+    { value: "40k+", label: "Product photos created" },
 ];
 
 export function Hero() {
@@ -49,7 +49,7 @@ export function Hero() {
                     <div className="flex items-center gap-1.5 rounded-full bg-primary/5 px-4 py-2 shadow-sm">
                         <TrendingUp className="size-4 text-primary" />
                         <span className="text-[12px] font-medium text-foreground">
-                            Professional images increase sales by <span className="text-primary font-bold">38%</span> and revenue by <span className="text-primary font-bold">24%</span>
+                            Sellers with professional photos see <span className="text-primary font-bold">2x more</span> conversions and <span className="text-primary font-bold">24% higher</span> revenue
                         </span>
                     </div>
                 </div>
@@ -57,17 +57,18 @@ export function Hero() {
                 {/* Headline */}
                 <div className="mx-auto max-w-3xl text-center animate-fade-in-up delay-100">
                     <h1 className="text-[clamp(2.75rem,6.5vw,5rem)] font-bold leading-[0.92] tracking-[-0.035em]">
-                        Phone Photo.
+                        Stop Losing Sales
                         <br />
-                        <span className="text-primary/25">Studio Result.</span>
+                        <span className="text-primary/25">to Bad Product Photos.</span>
                     </h1>
                 </div>
 
                 <div className="mx-auto max-w-2xl text-center animate-fade-in-up delay-200">
                     <p className="mt-7 text-[17px] leading-[1.7] text-muted-foreground">
-                        Upload any product photo taken with your phone. StudioShot removes the background,
-                        perfects the lighting, and delivers a clean, professional image ready for any
-                        e-commerce platform — in seconds.
+                        Professional product photography costs $25&ndash;$50 per image and takes weeks.
+                        StudioShot turns any phone photo into a studio-quality, platform-ready
+                        e-commerce image — with pure white backgrounds, perfect lighting, and
+                        natural shadows — in under 3 seconds.
                     </p>
                 </div>
 
@@ -91,10 +92,10 @@ export function Hero() {
                         className="rounded-full px-7 h-11 text-[14px] font-semibold gap-2 shadow-[0_2px_8px_rgba(249,115,22,0.2)] hover:shadow-[0_4px_16px_rgba(249,115,22,0.3)]"
                         onClick={openModal}
                     >
-                        Transform a Photo Free
+                        Try It Free — No Signup
                         <ArrowRight className="size-4" />
                     </Button>
-                    <span className="text-[13px] text-muted-foreground/70 tracking-wide">No account required</span>
+                    <span className="text-[13px] text-muted-foreground/70 tracking-wide">No credit card required</span>
                 </div>
 
                 {/* Before / After infinite scroll showcase */}
