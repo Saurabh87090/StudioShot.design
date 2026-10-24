@@ -1,0 +1,22 @@
+# StudioShot AI — Agentic Commerce & Capabilities Specification
+
+> StudioShot AI is an automated AI-powered visual studio for e-commerce sellers. It converts phone-shot product images into marketplace-ready 3:4 portrait infographics, listing banners, and virtual model lookbooks.
+
+## Core Services & Capabilities
+- **Infographic Generator**: Transforms product photos into 3:4 portrait listing banners with customizable background studio aesthetics, brand logo overlays, 21 typography fonts, and callout badges.
+- **AI Virtual Model Studio**: Converts flat-lay apparel photos into realistic human model lookbooks with customizable skin tones, torso fits (Male, Female, Kids), and studio backdrops.
+- **Brand Integration**: Secure upload and automated overlay of custom brand logos using Gemini multimodal AI processing.
+
+## Supported Marketplaces & Output Specs
+- **Aspect Ratio**: Strict 3:4 Portrait Format (Optimized for Mobile Conversion).
+- **Compatible Platforms**: Meesho, Amazon, Shopify, Flipkart, Instagram Shop.
+- **Output Formats**: HD JPEG/PNG.
+
+## Pricing & Tiers
+- **Free Tier**: Trial generation with standard studio backgrounds.
+- **Pro Tier**: Full HD exports, unlimited brand logo integrations, custom font styling, and priority AI processing.
+
+## API & Integration Manifest
+- Manifest Endpoint: /api/agent/manifest
+- Infographic Generation Endpoint: /api/generate-infographic
+- File Upload Endpoint: /api/upload-infographic

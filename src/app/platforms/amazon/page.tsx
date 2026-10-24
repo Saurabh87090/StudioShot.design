@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Navbar } from "@/components/navbar";
+import {Navbar}  from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { PageShell } from "@/components/page-shell";
-import { WaitlistCTAButton } from "@/components/waitlist-button";
+
 import { Check } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -57,9 +57,7 @@ export default function AmazonPage() {
                             </p>
                         </section>
 
-                        <div className="pt-4">
-                            <WaitlistCTAButton />
-                        </div>
+                        
                     </div>
                 </PageShell>
             </main>

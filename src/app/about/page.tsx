@@ -1,54 +1,110 @@
-import type { Metadata } from "next";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
-import { PageShell } from "@/components/page-shell";
+"use client";
 
-export const metadata: Metadata = {
-    title: "About — StudioShot",
-    description: "Learn about StudioShot and our mission to make professional product photography accessible to everyone.",
-};
+import { useState } from "react";
 
-export default function AboutPage() {
-    return (
-        <>
-            <Navbar />
-            <main>
-                <PageShell
-                    title="About StudioShot"
-                    description="Making professional product photography accessible to every seller, everywhere."
-                >
-                    <div className="space-y-8 text-[15px] leading-[1.8] text-foreground/80">
-                        <section>
-                            <h2 className="text-[18px] font-semibold tracking-tight text-foreground mb-3">Our Mission</h2>
-                            <p>
-                                StudioShot was built with a simple belief: great product photos shouldn&apos;t require a studio, expensive equipment, or professional photography skills. Every seller — from a first-time Etsy creator to a growing Amazon brand — deserves images that convert.
-                            </p>
-                        </section>
+export default function StudioPage() {
+  const [loading, setLoading] = useState(false);
+  const [processedImageUrl, setProcessedImageUrl] = useState("");
+  const [platform, setPlatform] = useState("Amazon");
+  const [background, setBackground] = useState("Pure White");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [error, setError] = useState("");
 
-                        <section>
-                            <h2 className="text-[18px] font-semibold tracking-tight text-foreground mb-3">The Problem We Solve</h2>
-                            <p>
-                                Product photography is one of the biggest barriers to selling online. Hiring a photographer costs hundreds per session. Learning Photoshop takes months. And phone photos with messy backgrounds simply don&apos;t convert. StudioShot eliminates all of that — upload a photo, and our AI delivers a studio-quality result in seconds.
-                            </p>
-                        </section>
+  const handleGenerate = async () => {
+    if (!selectedFile) {
+      setError("Please select a product photo first.");
+      return;
+    }
 
-                        <section>
-                            <h2 className="text-[18px] font-semibold tracking-tight text-foreground mb-3">How It Works</h2>
-                            <p>
-                                Our AI model was trained on millions of professional e-commerce images. It understands lighting, shadows, color balance, and marketplace standards. When you upload a photo, it removes the background with sub-pixel precision, reconstructs studio-grade lighting, adds natural shadows, and outputs an image ready for any platform.
-                            </p>
-                        </section>
+    setLoading(true);
+    setError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("platform", platform);
+      formData.append("background", background);
+      formData.append("userId", "guest_user_id");
 
-                        <section>
-                            <h2 className="text-[18px] font-semibold tracking-tight text-foreground mb-3">Built for Sellers</h2>
-                            <p>
-                                We&apos;re a small team of engineers and designers who&apos;ve spent years in e-commerce. We&apos;ve seen firsthand how a single great product image can double a listing&apos;s conversion rate. StudioShot is the tool we wish we&apos;d had — fast, affordable, and built specifically for the platforms sellers actually use.
-                            </p>
-                        </section>
-                    </div>
-                </PageShell>
-            </main>
-            <Footer />
-        </>
-    );
+      const res = await fetch("/api/generate-listing", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to generate the studio image.");
+      }
+
+      setProcessedImageUrl(data.processedImageUrl);
+    } catch (err) {
+      console.error("Generation error:", err);
+      setError(err instanceof Error ? err.message : "Generation failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ padding: "20px", fontFamily: "sans-serif" }}>
+      <h1>Marketplace Studio</h1>
+
+      <div style={{ marginBottom: "15px" }}>
+        <label htmlFor="product-photo">Product photo: </label>
+        <input
+          id="product-photo"
+          type="file"
+          accept="image/*"
+          onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+        />
+      </div>
+
+      <div style={{ marginBottom: "15px" }}>
+        <label>Platform: </label>
+        <select value={platform} onChange={(e) => setPlatform(e.target.value)}>
+          <option value="Amazon">Amazon</option>
+          <option value="Flipkart">Flipkart</option>
+          <option value="Shopify">Shopify</option>
+        </select>
+      </div>
+
+      <div style={{ marginBottom: "15px" }}>
+        <label>Background: </label>
+        <select
+          value={background}
+          onChange={(e) => setBackground(e.target.value)}
+        >
+          <option value="Pure White">Pure White</option>
+          <option value="Studio Studio">Studio Studio</option>
+        </select>
+      </div>
+
+      <button
+        onClick={handleGenerate}
+        disabled={loading}
+        style={{
+          padding: "10px 20px",
+          backgroundColor: "#f97316",
+          color: "#fff",
+          border: "none",
+          borderRadius: "6px",
+          cursor: "pointer",
+        }}
+      >
+        {loading ? "Generating Image..." : "Generate & Save Marketplace Image"}
+      </button>
+
+      {error && <p style={{ color: "#dc2626" }}>{error}</p>}
+
+      {processedImageUrl && (
+        <div style={{ marginTop: "20px" }}>
+          <h3>Result:</h3>
+          <img
+            src={processedImageUrl}
+            alt="Generated Result"
+            style={{ maxWidth: "400px", borderRadius: "8px" }}
+          />
+        </div>
+      )}
+    </div>
+  );
 }

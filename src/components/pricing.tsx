@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useWaitlist } from "@/components/waitlist-modal";
+
 import { Check } from "lucide-react";
 
 const plans = [
@@ -56,7 +56,7 @@ const plans = [
 ];
 
 export function Pricing() {
-    const { openModal } = useWaitlist();
+   
 
     return (
         <section id="pricing" className="py-24 md:py-32 bg-neutral-50/40">
@@ -135,7 +135,7 @@ export function Pricing() {
                                         ? "shadow-[0_2px_8px_rgba(249,115,22,0.18)] hover:shadow-[0_4px_12px_rgba(249,115,22,0.25)]"
                                         : "border-black/[0.08] hover:bg-neutral-50"
                                     }`}
-                                onClick={openModal}
+                                
                             >
                                 {plan.cta}
                             </Button>

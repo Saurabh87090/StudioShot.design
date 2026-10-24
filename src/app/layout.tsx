@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
-import { WaitlistProvider } from "@/components/waitlist-modal";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -72,101 +71,44 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // AEO JSON-LD Structured Data for AI Search & Answer Engines
+  const jsonLdData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "StudioShot AI",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Web Browser",
+    "description":
+      "StudioShot AI transforms phone photos into high-converting e-commerce product infographics, listing banners, and virtual model lookbooks.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+    },
+    "featureList": [
+      "E-commerce Infographic Generation",
+      "AI Virtual Model Studio",
+      "Custom Brand Logo Overlay",
+      "21 Curated Fonts Selection",
+      "Strict 3:4 Portrait Aspect Ratio Enforcement",
+    ],
+  };
+
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth" data-scroll-behavior="smooth">
       <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "SoftwareApplication",
-              name: "StudioShot",
-              applicationCategory: "PhotographyApplication",
-              operatingSystem: "Web",
-              description:
-                "AI-powered product photography tool that turns phone photos into studio-quality, marketplace-ready e-commerce images in seconds.",
-              offers: [
-                {
-                  "@type": "Offer",
-                  price: "0",
-                  priceCurrency: "USD",
-                  name: "Starter",
-                  description: "5 free images per month",
-                },
-                {
-                  "@type": "Offer",
-                  price: "19",
-                  priceCurrency: "USD",
-                  name: "Pro",
-                  description: "150 images per month with batch processing",
-                },
-                {
-                  "@type": "Offer",
-                  price: "49",
-                  priceCurrency: "USD",
-                  name: "Business",
-                  description:
-                    "Unlimited images with API access and team seats",
-                },
-              ],
-              featureList: [
-                "AI Background Removal",
-                "Studio Lighting Correction",
-                "Amazon White Background Compliance",
-                "Batch Product Photo Processing",
-                "Soft Shadow Generation",
-                "Platform-Ready Export for Amazon, Shopify, Etsy",
-              ],
-            }),
-          }}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Cinzel:wght@600&family=Dancing+Script:wght@700&family=Fira+Code&family=Inter:wght@400;600;700&family=Lobster&family=Merriweather:wght@700&family=Montserrat:wght@600;700&family=Oswald:wght@600&family=Pacifico&family=Playfair+Display:wght@700&family=Poppins:wght@600;700&family=Quicksand:wght@600&family=Raleway:wght@600&family=Ubuntu:wght@700&display=swap"
+          rel="stylesheet"
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "FAQPage",
-              mainEntity: [
-                {
-                  "@type": "Question",
-                  name: "How much does professional product photography cost?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "Professional product photography typically costs $25-$70 per image with turnaround times of 2-10 weeks. StudioShot offers the same quality starting free, with results in under 3 seconds.",
-                  },
-                },
-                {
-                  "@type": "Question",
-                  name: "Does StudioShot create Amazon-compliant white background images?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "Yes. StudioShot generates pure white (RGB 255,255,255) backgrounds that meet Amazon's strict main image requirements, so your listings won't get rejected.",
-                  },
-                },
-                {
-                  "@type": "Question",
-                  name: "Can I use my phone to take product photos?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "StudioShot is specifically designed for phone photos. No DSLR, lightbox, or photo studio needed. Just snap a photo and upload it.",
-                  },
-                },
-                {
-                  "@type": "Question",
-                  name: "How is StudioShot different from remove.bg or Photoroom?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "StudioShot goes beyond background removal. It also corrects lighting, adjusts color temperature, generates natural shadows, and exports in platform-specific formats — all in one step.",
-                  },
-                },
-              ],
-            }),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
         />
+        <link rel="agent-manifest" href="/api/agent/manifest" />
       </head>
       <body className={`${spaceGrotesk.className} antialiased`}>
-        <WaitlistProvider>{children}</WaitlistProvider>
+        {children}
       </body>
     </html>
   );

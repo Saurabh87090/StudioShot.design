@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start StudioShot Next.js",
+      "type": "shell",
+      "command": "yarn",
+      "args": ["dev", "--hostname", "0.0.0.0"],
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "nextjs",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*next dev.*$",
+          "endsPattern": "^.*Ready in.*$"
+        }
+      },
+      "group": "build"
+    }
+  ]
+}
