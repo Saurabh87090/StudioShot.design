@@ -35,3 +35,17 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 # StudioShot.design
+
+## Authentication redirects
+
+Set `NEXT_PUBLIC_SITE_URL` in the deployment environment to the canonical app
+origin, for example `https://www.studioshot.design` (without a trailing slash).
+For local development, set it to `http://localhost:3000` or leave it unset.
+Google sign-in uses this origin for its callback, and successful sign-in returns
+to `/desktop`.
+
+In Supabase, set **Authentication → URL Configuration → Site URL** to
+`https://www.studioshot.design` and add
+`https://www.studioshot.design/api/auth/callback` to the allowed redirect URLs.
+If you also use the non-`www` domain, configure it to redirect to the canonical
+`www` domain.

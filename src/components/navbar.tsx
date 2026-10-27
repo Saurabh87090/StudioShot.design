@@ -7,6 +7,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import type { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { getSiteOrigin } from "@/lib/site-url";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -55,7 +56,10 @@ export function Navbar() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
+        redirectTo: new URL(
+          "/api/auth/callback",
+          getSiteOrigin(window.location.origin),
+        ).toString(),
         queryParams: {
           access_type: "offline",
           prompt: "select_account",

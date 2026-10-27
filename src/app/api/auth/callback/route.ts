@@ -1,20 +1,22 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
+import { getSiteOrigin } from "@/lib/site-url";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
+  const siteOrigin = getSiteOrigin(requestUrl.origin);
   const code = requestUrl.searchParams.get("code");
 
   if (!code) {
     return NextResponse.redirect(
-      `${requestUrl.origin}/?error=${encodeURIComponent("Could not authenticate user")}`,
+      `${siteOrigin}/?error=${encodeURIComponent("Could not authenticate user")}`,
     );
   }
 
   const cookieStore = await cookies();
   const redirectResponse = NextResponse.redirect(
-    `${requestUrl.origin}/desktop`,
+    `${siteOrigin}/desktop`,
   );
 
   const supabase = createServerClient(
@@ -41,6 +43,6 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.redirect(
-    `${requestUrl.origin}/?error=${encodeURIComponent(error.message)}`,
+    `${siteOrigin}/?error=${encodeURIComponent(error.message)}`,
   );
 }

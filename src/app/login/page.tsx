@@ -1,6 +1,7 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
+import { getSiteOrigin } from "@/lib/site-url";
 
 export default function LoginPage() {
   const supabase = createBrowserClient(
@@ -12,7 +13,10 @@ export default function LoginPage() {
   await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${window.location.origin}/api/auth/callback`,
+      redirectTo: new URL(
+        "/api/auth/callback",
+        getSiteOrigin(window.location.origin),
+      ).toString(),
       queryParams: {
         access_type: "offline",
         prompt: "select_account", // 👈 Yeh line hamesha Google Account Chooser screen open karegi
