@@ -49,3 +49,20 @@ In Supabase, set **Authentication → URL Configuration → Site URL** to
 `https://www.studioshot.design/api/auth/callback` to the allowed redirect URLs.
 If you also use the non-`www` domain, configure it to redirect to the canonical
 `www` domain.
+
+## OpenAI image generation
+
+Set `OPENAI_API_KEY` in `.env.local` for local development and in the deployment
+environment for production:
+
+```env
+OPENAI_API_KEY=your_actual_openai_key_here
+```
+
+## Generation tokens
+
+Quick Listing, Infographic, and Virtual Model generations require at least 10
+tokens and deduct 10 tokens after a successful generation. Background removal
+remains free. Users without a `profiles` row or with a null token balance are
+treated as having 0 tokens; ensure new accounts receive their initial token
+balance through the application's Supabase profile setup.

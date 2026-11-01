@@ -16,6 +16,8 @@ import {
   ImageIcon,
 } from "lucide-react";
 import InfographicEditorModal from "@/components/InfographicEditorModal";
+import OutOfTokensModal from "@/components/OutOfTokensModal";
+import { useGenerationTokenGuard } from "@/hooks/use-generation-token-guard";
 
 // 21 Aesthetic E-commerce & Design Fonts
 export const CURATED_FONTS = [
@@ -80,6 +82,13 @@ const BACKGROUND_STYLES = [
 ];
 
 export default function InfographicDashboard() {
+  const {
+    isOutOfTokensModalOpen,
+    setIsOutOfTokensModalOpen,
+    checkTokenBalance,
+    handleOutOfTokensResponse,
+  } = useGenerationTokenGuard();
+
   // Input States
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -243,6 +252,18 @@ export default function InfographicDashboard() {
       return;
     }
 
+    try {
+      if (!(await checkTokenBalance())) return;
+    } catch (error) {
+      console.error("Could not verify generation token balance:", error);
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not check your token balance.",
+      );
+      return;
+    }
+
     setIsGenerating(true);
     setGenerationProgress(10);
 
@@ -283,12 +304,19 @@ export default function InfographicDashboard() {
       setGenerationProgress(100);
 
       const responseText = await response.text();
-      let data: { success?: boolean; error?: string; imageUrl?: string } = {};
+      let data: {
+        success?: boolean;
+        error?: string;
+        imageUrl?: string;
+        outOfTokens?: boolean;
+      } = {};
       try {
         data = responseText ? JSON.parse(responseText) : {};
       } catch {
         throw new Error(`Generation failed with status ${response.status}.`);
       }
+
+      if (handleOutOfTokensResponse(response, data)) return;
 
       if (data.success && data.imageUrl) {
         setGeneratedImage(data.imageUrl);
@@ -316,7 +344,7 @@ export default function InfographicDashboard() {
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col font-sans">
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12">
         {/* LEFT PANEL */}
-        <div className="lg:col-span-4 bg-white border-r border-slate-200 p-6 flex flex-col gap-5 overflow-y-auto max-h-screen">
+        <div className="min-w-0 bg-white border-b border-slate-200 p-4 flex flex-col gap-5 overflow-y-visible sm:p-6 lg:col-span-4 lg:max-h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r lg:p-6">
           {/* Header */}
           <div className="flex items-center justify-between">
             <Link
@@ -425,7 +453,7 @@ export default function InfographicDashboard() {
             ) : (
               <div className="flex items-center gap-3 bg-white p-2 rounded-lg border border-slate-200">
                 <img src={brandLogoPreview} alt="Logo" className="w-7 h-7 object-contain bg-slate-100 rounded p-1" />
-                <span className="text-xs font-medium text-emerald-600">Logo attached for Gemini prompt</span>
+                <span className="text-xs font-medium text-emerald-600">Logo attached for image generation</span>
               </div>
             )}
           </div>
@@ -439,13 +467,13 @@ export default function InfographicDashboard() {
               Target Marketplace
             </label>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {MARKETPLACES.map((mp) => (
                 <button
                   key={mp.id}
                   type="button"
                   onClick={() => setSelectedPlatform(mp.id)}
-                  className={`py-2 px-3 text-xs font-semibold rounded-lg border transition text-center cursor-pointer ${
+                  className={`min-h-11 py-2 px-3 text-xs font-semibold rounded-lg border transition text-center cursor-pointer lg:min-h-0 ${
                     selectedPlatform === mp.id
                       ? "bg-[#fe834d] text-white border-[#fe834d] shadow-sm"
                       : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
@@ -665,8 +693,8 @@ export default function InfographicDashboard() {
         </div>
 
         {/* RIGHT PANEL: DISPLAY PROCESSED IMAGE */}
-        <div className="lg:col-span-8 p-8 flex flex-col justify-between bg-[#f8fafc]">
-          <div className="flex items-center justify-between pb-6 border-b border-slate-200">
+        <div className="min-w-0 p-4 flex flex-col justify-between bg-[#f8fafc] sm:p-6 lg:col-span-8 lg:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-6 lg:flex-nowrap lg:gap-0">
             <div>
               <h2 className="text-base font-bold text-slate-900">
                 Listing Preview Canvas
@@ -759,6 +787,10 @@ export default function InfographicDashboard() {
           if (updatedImageUrl) setGeneratedImage(updatedImageUrl);
           setIsEditorModalOpen(false);
         }}
+      />
+      <OutOfTokensModal
+        isOpen={isOutOfTokensModalOpen}
+        onClose={() => setIsOutOfTokensModalOpen(false)}
       />
     </div>
   );

@@ -26,13 +26,13 @@ export default function LoginPage() {
 };
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md rounded-xl border bg-white p-6 shadow-md text-center">
+      <div className="w-[calc(100%-2rem)] max-w-md rounded-xl border bg-white p-4 text-center shadow-md sm:p-6">
         <h1 className="text-2xl font-bold mb-4">Welcome to StudioShot</h1>
         <p className="text-sm text-gray-500 mb-6">Sign in to start editing your images</p>
 
         <button
           onClick={handleGoogleLogin}
-          className="flex w-full items-center justify-center gap-3 rounded-lg border py-2 px-4 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+          className="flex min-h-11 w-full items-center justify-center gap-3 rounded-lg border px-4 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 lg:min-h-0 lg:py-2"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path

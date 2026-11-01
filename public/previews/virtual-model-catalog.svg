@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="480" viewBox="0 0 800 480" fill="none">
+  <defs>
+    <linearGradient id="backdrop" x1="52" y1="24" x2="754" y2="452" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8F3EF"/>
+      <stop offset="1" stop-color="#E7DCD3"/>
+    </linearGradient>
+    <linearGradient id="shirt" x1="350" y1="154" x2="535" y2="438" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFDFB"/>
+      <stop offset="1" stop-color="#E7E1DC"/>
+    </linearGradient>
+    <linearGradient id="skin" x1="386" y1="54" x2="464" y2="198" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D9A783"/>
+      <stop offset="1" stop-color="#B97955"/>
+    </linearGradient>
+    <filter id="shadow" x="283" y="126" width="314" height="352" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="15"/>
+    </filter>
+  </defs>
+  <rect width="800" height="480" rx="28" fill="url(#backdrop)"/>
+  <circle cx="650" cy="93" r="118" fill="#FFF9F4" fill-opacity=".72"/>
+  <path d="M0 380C133 338 249 363 365 404c126 45 284 52 435 7v69H0v-100Z" fill="#D9C9BD" fill-opacity=".44"/>
+  <ellipse cx="442" cy="444" rx="133" ry="17" fill="#6C5140" fill-opacity=".2" filter="url(#shadow)"/>
+  <path d="M410 131h66v63c0 20-15 36-33 36s-33-16-33-36v-63Z" fill="url(#skin)"/>
+  <path d="M376 90c0-46 28-73 69-73 43 0 72 29 72 76v35c0 42-31 70-72 70-40 0-69-30-69-71V90Z" fill="url(#skin)"/>
+  <path d="M376 100c-9-53 19-93 72-93 45 0 72 32 70 82-14-10-24-25-30-43-25 23-61 36-109 37l-3 17Z" fill="#332D2A"/>
+  <path d="M397 110c7-5 15-5 22 0M450 110c7-5 15-5 22 0" stroke="#573B30" stroke-width="4" stroke-linecap="round"/>
+  <path d="M426 120v22M414 153c9 7 22 7 31 0" stroke="#82533E" stroke-width="4" stroke-linecap="round"/>
+  <path d="m383 174-44 16c-19 7-34 23-42 42l-54 140c-6 15 2 32 18 36l44 12 41-110 8 127h186l8-127 41 110 44-12c16-4 24-21 18-36l-54-140c-8-19-23-35-42-42l-45-16c-13 25-35 39-63 39-27 0-50-14-64-39Z" fill="url(#shirt)" stroke="#D5C9C0" stroke-width="3"/>
+  <path d="m383 174 44 39 45-39M427 213l-20 27 20 17 20-17-20-27Z" fill="#F4EDE7" stroke="#D5C9C0" stroke-width="3" stroke-linejoin="round"/>
+  <path d="m412 257 15 13 15-13v72l-15 18-15-18v-72Z" fill="#FE834D"/>
+  <path d="M331 285c36 17 76 25 121 25 48 0 88-8 119-25M332 354c35 14 75 21 120 21 46 0 85-7 119-21" stroke="#D9CEC6" stroke-width="3" stroke-linecap="round"/>
+  <rect x="43" y="42" width="184" height="40" rx="20" fill="#FFFFFF" fill-opacity=".86"/>
+  <circle cx="66" cy="62" r="6" fill="#FE834D"/>
+  <text x="82" y="68" fill="#57483F" font-family="Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1.2">STUDIO CATALOG</text>
+  <rect x="569" y="363" width="177" height="66" rx="14" fill="#FFFFFF" fill-opacity=".9"/>
+  <text x="588" y="390" fill="#57483F" font-family="Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="1">MODEL PREVIEW</text>
+  <text x="588" y="412" fill="#8A7668" font-family="Arial, sans-serif" font-size="13">Natural fit · Studio light</text>
+</svg>

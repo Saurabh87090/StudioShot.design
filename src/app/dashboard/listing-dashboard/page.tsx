@@ -24,6 +24,8 @@ import {
   Globe,
 } from "lucide-react";
 import Link from "next/link";
+import OutOfTokensModal from "@/components/OutOfTokensModal";
+import { useGenerationTokenGuard } from "@/hooks/use-generation-token-guard";
 
 interface ProcessedResult {
   url: string;
@@ -33,6 +35,13 @@ interface ProcessedResult {
 }
 
 export default function ListingDashboardPage() {
+  const {
+    isOutOfTokensModalOpen,
+    setIsOutOfTokensModalOpen,
+    checkTokenBalance,
+    handleOutOfTokensResponse,
+  } = useGenerationTokenGuard();
+
   // Input States
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -180,10 +189,22 @@ export default function ListingDashboardPage() {
     }
   };
 
-  // ================= GEMINI AI GENERATION WITH LIVE PROGRESS =================
+  // ================= AI IMAGE GENERATION WITH LIVE PROGRESS =================
   const handleGenerate = async () => {
     if (!selectedImage) {
       setErrorMsg("Please upload an image first.");
+      return;
+    }
+
+    try {
+      if (!(await checkTokenBalance())) return;
+    } catch (error) {
+      console.error("Could not verify generation token balance:", error);
+      setErrorMsg(
+        error instanceof Error
+          ? error.message
+          : "Could not check your token balance.",
+      );
       return;
     }
 
@@ -204,7 +225,7 @@ export default function ListingDashboardPage() {
     }, 700);
 
     try {
-      // Prepare Payload for Gemini API Route
+      // Prepare the payload for the image generation route.
       const formData = new FormData();
       formData.append("file", selectedImage);
       formData.append("platform", selectedPlatform);
@@ -213,7 +234,7 @@ export default function ListingDashboardPage() {
       formData.append("background", backgroundColor);
       formData.append("enhanceLighting", String(enhanceLighting));
       formData.append("addShadow", String(addShadow));
-      // Call Gemini Server Route
+      // Call the server-side image generation route.
       const response = await fetch("/api/generate-listing", {
         method: "POST",
         body: formData,
@@ -223,6 +244,8 @@ export default function ListingDashboardPage() {
       setGenerationProgress(100); // Complete on success
 
       const data = await response.json();
+
+      if (handleOutOfTokensResponse(response, data)) return;
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || "Failed to process image.");
@@ -257,9 +280,9 @@ export default function ListingDashboardPage() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-white text-slate-800 font-sans overflow-hidden">
+    <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-white font-sans text-slate-800 lg:h-screen lg:flex-row lg:overflow-hidden">
       {/* ================= LEFT CONTROLS PANEL ================= */}
-      <aside className="w-[520px] border-r border-slate-200 bg-slate-50/60 p-6 flex flex-col justify-between shrink-0 overflow-y-auto">
+      <aside className="flex w-full shrink-0 flex-col justify-between border-b border-slate-200 bg-slate-50/60 p-4 sm:p-6 lg:w-[520px] lg:border-b-0 lg:border-r lg:overflow-y-auto">
         <div className="space-y-6">
           {/* Header Nav */}
           <div className="flex items-center justify-between">
@@ -348,7 +371,7 @@ export default function ListingDashboardPage() {
                       setSelectedPlatform(p.id);
                       setIsCustomRatioActive(false);
                     }}
-                    className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                    className={`flex min-h-11 items-center gap-2 p-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer lg:min-h-0 ${
                       isSelected
                         ? "bg-[#fe834d] text-white border-[#fe834d] shadow-md shadow-[#fe834d]/20"
                         : "bg-white text-slate-600 border-slate-200 hover:border-[#fe834d] hover:text-[#fe834d]"
@@ -521,7 +544,7 @@ export default function ListingDashboardPage() {
       </aside>
 
       {/* ================= RIGHT CANVAS AREA ================= */}
-      <main className="flex-1 bg-slate-100/50 flex flex-col justify-between p-8 overflow-y-auto">
+      <main className="flex min-w-0 flex-1 flex-col justify-between overflow-y-auto bg-slate-100/50 p-4 sm:p-6 lg:p-8">
         {generatedResult && (
           <div className="flex justify-end gap-2">
             <button
@@ -643,7 +666,7 @@ export default function ListingDashboardPage() {
             role="dialog"
             aria-modal="true"
             aria-label="Generated image preview"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-2 sm:p-4 lg:p-6"
             onClick={() => setIsPreviewOpen(false)}
           >
             <div
@@ -666,6 +689,10 @@ export default function ListingDashboardPage() {
             </div>
           </div>
         )}
+        <OutOfTokensModal
+          isOpen={isOutOfTokensModalOpen}
+          onClose={() => setIsOutOfTokensModalOpen(false)}
+        />
       </main>
     </div>
   );

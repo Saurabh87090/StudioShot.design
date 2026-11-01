@@ -2,6 +2,14 @@ import { NextResponse } from "next/server";
 import { saveListingToSupabase, supabaseAdmin } from "@/lib/supabase-listing";
 import { randomUUID } from "node:crypto";
 import { getAuthenticatedUser } from "@/lib/supabase-auth";
+import OpenAI from "openai";
+import { toFile } from "openai/uploads";
+import sharp from "sharp";
+import {
+  deductGenerationTokens,
+  hasGenerationTokens,
+  outOfTokensResponse,
+} from "@/lib/generation-tokens";
 
 export const runtime = "nodejs";
 
@@ -13,6 +21,10 @@ export async function POST(req: Request) {
         { success: false, error: "Sign in before generating a listing image." },
         { status: 401 },
       );
+    }
+
+    if (!(await hasGenerationTokens(supabaseAdmin, user.id))) {
+      return outOfTokensResponse();
     }
 
     const formData = await req.formData();
@@ -38,16 +50,17 @@ export async function POST(req: Request) {
       );
     }
 
-    const apiKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         {
           success: false,
-          error: "GEMINI_API_KEY is not configured on the server.",
+          error: "OPENAI_API_KEY is not configured on the server.",
         },
         { status: 500 },
       );
     }
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const platform = String(formData.get("platform") || "Amazon");
     const aspectRatio = String(formData.get("aspectRatio") || "1:1");
@@ -76,78 +89,52 @@ export async function POST(req: Request) {
       .from("marketplace-listings")
       .getPublicUrl(originalFileName);
 
-    const prompt = [
-      "Create a photorealistic e-commerce studio product photograph using the attached image.",
-      "Keep the product itself faithful to the source: preserve its identity, geometry, colors, branding, labels, and details; do not add text or extra objects.",
-      `Use a strict ${aspectRatio} aspect ratio layout and a ${background} background style.`,
-      `Optimize the composition for ${platform}. ${platformRules}`,
-      `Studio lighting enhancement: ${enhanceLighting ? "enabled" : "disabled"}.`,
-      `Realistic contact shadow: ${addShadow ? "enabled" : "disabled"}.`,
-      "Return only the finished image.",
-    ].join(" ");
+   const prompt = [
+  "Create a flawless, studio-grade photorealistic e-commerce product photograph using the attached image as the base.",
+  "Professional Product Retouching & Cleaning: Thoroughly clean and restore the product surface. Remove any dirt, grime, dust, smudges, stains, or minor surface scratches present in the source image. Make the product look brand new, polished, and pristine while strictly preserving its original identity, geometry, colors, branding, labels, and unique details. Do not add unwanted text or extra objects.",
+  `Use a strict ${aspectRatio} aspect ratio layout and a ${background} background style.`,
+  `Optimize the composition for ${platform}. ${platformRules}`,
+  `Studio lighting enhancement: ${enhanceLighting ? "enabled" : "disabled"}.`,
+  `Realistic contact shadow: ${addShadow ? "enabled" : "disabled"}.`,
+  "Return only the finished image.",
+].join(" ");
 
-    const generationResponse = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent",
+    const sourcePng = await sharp(sourceBuffer).png().toBuffer();
+    const aspectRatioSizes: Record<string, { width: number; height: number }> = {
+      "1:1": { width: 1024, height: 1024 },
+      "3:4": { width: 768, height: 1024 },
+      "4:3": { width: 1024, height: 768 },
+      "16:9": { width: 1536, height: 864 },
+      "9:16": { width: 576, height: 1024 },
+    };
+    const targetSize = aspectRatioSizes[aspectRatio] ?? aspectRatioSizes["1:1"];
+    const outputSize =
+      aspectRatio === "1:1"
+        ? "1024x1024"
+        : aspectRatio === "4:3" || aspectRatio === "16:9"
+          ? "1536x1024"
+          : "1024x1536";
+    const generationResponse = await openai.images.edit(
       {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: prompt },
-                {
-                  inlineData: {
-                    mimeType: file.type,
-                    data: sourceBuffer.toString("base64"),
-                  },
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            responseModalities: ["IMAGE"],
-            imageConfig: {
-              aspectRatio: aspectRatio, // <-- Yeh line ab marketplace ke selected aspect ratio ko strictly enforce karegi!
-            },
-          },
-        }),
+        model: "gpt-image-2.5-sunburst",
+        image: await toFile(sourcePng, "product.png", { type: "image/png" }),
+        prompt,
+        size: outputSize,
+        output_format: "png",
       },
+      { signal: AbortSignal.timeout(120_000) },
     );
 
-    const responseText = await generationResponse.text();
-    let generationData: {
-      error?: { message?: string };
-      candidates?: Array<{
-        content?: {
-          parts?: Array<{ inlineData?: { mimeType?: string; data?: string } }>;
-        };
-      }>;
-    };
-    try {
-      generationData = JSON.parse(responseText);
-    } catch {
-      throw new Error("Gemini returned an unreadable response.");
+    const imageData = generationResponse.data?.[0]?.b64_json;
+    if (!imageData) {
+      throw new Error("OpenAI did not return a generated image.");
     }
 
-    if (!generationResponse.ok) {
-      throw new Error(
-        generationData.error?.message || "Gemini image generation failed.",
-      );
-    }
-
-    const imagePart = generationData.candidates?.[0]?.content?.parts?.find(
-      (part) => part.inlineData?.data,
-    )?.inlineData;
-    if (!imagePart?.data) {
-      throw new Error("Gemini did not return a generated image.");
-    }
-
-    const imageBuffer = Buffer.from(imagePart.data, "base64");
-    const contentType = imagePart.mimeType || "image/png";
+    const imageBuffer = await sharp(Buffer.from(imageData, "base64"))
+      .resize({ ...targetSize, fit: "cover" })
+      .png()
+      .toBuffer();
+    const contentType = "image/png";
 
     const { processedImageUrl } = await saveListingToSupabase({
       userId: user.id,
@@ -157,6 +144,10 @@ export async function POST(req: Request) {
       backgroundStyle: background,
       originalImageUrl: originalUrlData.publicUrl,
     });
+
+    if (!(await deductGenerationTokens(supabaseAdmin, user.id))) {
+      return outOfTokensResponse();
+    }
 
     return NextResponse.json({
       success: true,

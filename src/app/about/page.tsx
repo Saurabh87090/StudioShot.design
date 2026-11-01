@@ -1,8 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import OutOfTokensModal from "@/components/OutOfTokensModal";
+import { useGenerationTokenGuard } from "@/hooks/use-generation-token-guard";
 
 export default function StudioPage() {
+  const {
+    isOutOfTokensModalOpen,
+    setIsOutOfTokensModalOpen,
+    checkTokenBalance,
+    handleOutOfTokensResponse,
+  } = useGenerationTokenGuard();
+
   const [loading, setLoading] = useState(false);
   const [processedImageUrl, setProcessedImageUrl] = useState("");
   const [platform, setPlatform] = useState("Amazon");
@@ -13,6 +22,18 @@ export default function StudioPage() {
   const handleGenerate = async () => {
     if (!selectedFile) {
       setError("Please select a product photo first.");
+      return;
+    }
+
+    try {
+      if (!(await checkTokenBalance())) return;
+    } catch (tokenError) {
+      console.error("Could not verify generation token balance:", tokenError);
+      setError(
+        tokenError instanceof Error
+          ? tokenError.message
+          : "Could not check your token balance.",
+      );
       return;
     }
 
@@ -31,6 +52,8 @@ export default function StudioPage() {
       });
 
       const data = await res.json();
+      if (handleOutOfTokensResponse(res, data)) return;
+
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Failed to generate the studio image.");
       }
@@ -105,6 +128,10 @@ export default function StudioPage() {
           />
         </div>
       )}
+      <OutOfTokensModal
+        isOpen={isOutOfTokensModalOpen}
+        onClose={() => setIsOutOfTokensModalOpen(false)}
+      />
     </div>
   );
 }

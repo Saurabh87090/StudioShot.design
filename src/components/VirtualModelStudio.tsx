@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Upload, Sparkles, Download, ArrowLeft, RefreshCw, Layers, Check, X } from 'lucide-react';
+import OutOfTokensModal from "@/components/OutOfTokensModal";
+import { useGenerationTokenGuard } from "@/hooks/use-generation-token-guard";
 
 const GENDER_CATEGORIES = [
   { id: 'Male', label: 'Male Torso', icon: '👔', desc: 'Standard Athletic Fit' },
@@ -26,6 +28,13 @@ const STUDIO_VIBES = [
 ];
 
 export default function VirtualModelStudio() {
+  const {
+    isOutOfTokensModalOpen,
+    setIsOutOfTokensModalOpen,
+    checkTokenBalance,
+    handleOutOfTokensResponse,
+  } = useGenerationTokenGuard();
+
   const [productImage, setProductImage] = useState<string | null>(null);
   const [garmentStoragePath, setGarmentStoragePath] = useState<string | null>(null);
   const [targetGender, setTargetGender] = useState('Male');
@@ -88,6 +97,19 @@ export default function VirtualModelStudio() {
 
   const handleGenerate = async () => {
     if (!productImage || !garmentStoragePath) return;
+
+    try {
+      if (!(await checkTokenBalance())) return;
+    } catch (error) {
+      console.error('Could not verify generation token balance:', error);
+      setDownloadError(
+        error instanceof Error
+          ? error.message
+          : 'Could not check your token balance.',
+      );
+      return;
+    }
+
     setIsGenerating(true);
     setGeneratedResult(null);
     setGeneratedStoragePath(null);
@@ -105,17 +127,32 @@ export default function VirtualModelStudio() {
         }),
       });
 
-      const data = await response.json();
+      const data: {
+        error?: string;
+        outOfTokens?: boolean;
+        generatedImageUrl?: string;
+        generatedStoragePath?: string;
+      } = await response.json();
 
-      if (!response.ok) {
+      if (handleOutOfTokensResponse(response, data)) return;
+
+      if (
+        !response.ok ||
+        !data.generatedImageUrl ||
+        !data.generatedStoragePath
+      ) {
         throw new Error(data.error || 'Failed to generate model shoot');
       }
 
       setGeneratedResult(data.generatedImageUrl);
       setGeneratedStoragePath(data.generatedStoragePath);
     } catch (err) {
-      console.error('Generation Error:', err);
-      alert('AI Generation failed. Please try again.');
+      console.warn('AI model generation was rejected:', err);
+      setDownloadError(
+        err instanceof Error
+          ? err.message
+          : 'AI generation failed. Please try again.',
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -157,11 +194,11 @@ export default function VirtualModelStudio() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] flex flex-col font-sans text-gray-900">
+    <div className="min-h-screen overflow-x-hidden bg-[#f8f9fa] flex flex-col font-sans text-gray-900 lg:overflow-x-visible">
       
       {/* Top Header Bar */}
-      <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between sticky top-0 z-20">
-        <div className="flex items-center space-x-4">
+      <header className="sticky top-0 z-20 flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 py-3 sm:px-6 lg:h-16 lg:flex-nowrap lg:gap-0 lg:py-0">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-4">
           <Link href="/desktop" className="flex items-center text-sm font-medium text-gray-600 hover:text-[#fe8956] transition-colors">
             <ArrowLeft className="w-4 h-4 mr-1.5" /> Back to Dashboard
           </Link>
@@ -174,12 +211,12 @@ export default function VirtualModelStudio() {
           </div>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex w-full items-center justify-end gap-2 sm:w-auto sm:gap-3">
           {/* Preview Image Thumbnail Button */}
           {(generatedResult || productImage) && (
             <button
               onClick={() => setIsFullScreenOpen(true)}
-              className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 shadow-sm transition-all cursor-pointer"
+              className="flex min-h-11 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 cursor-pointer lg:min-h-0"
               title="Click to preview full screen"
             >
               <img 
@@ -195,7 +232,7 @@ export default function VirtualModelStudio() {
           <button 
             onClick={handleDownload}
             disabled={!generatedStoragePath || isDownloading}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-all ${
+            className={`flex min-h-11 items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium shadow-sm transition-all lg:min-h-0 ${
               generatedStoragePath && !isDownloading
                 ? 'bg-[#fe8956] text-white hover:opacity-90 cursor-pointer' 
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -213,10 +250,10 @@ export default function VirtualModelStudio() {
       )}
 
       {/* Main Split-Screen Workspace */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-visible lg:flex-row lg:overflow-hidden">
         
         {/* Left Sidebar Control Panel */}
-        <div className="w-[440px] bg-white border-r border-gray-200 overflow-y-auto p-6 space-y-6 flex-shrink-0">
+        <div className="w-full flex-shrink-0 space-y-6 overflow-y-visible border-b border-gray-200 bg-white p-4 sm:p-6 lg:w-[440px] lg:overflow-y-auto lg:border-b-0 lg:border-r lg:p-6">
           
           {/* Section 1: Upload Garment */}
           <div className="space-y-3">
@@ -297,12 +334,12 @@ export default function VirtualModelStudio() {
               <span>3. Model Skin Tone</span>
               <span className="text-[11px] font-normal text-gray-400 capitalize">{skinTone}</span>
             </label>
-            <div className="flex items-center space-x-3 bg-gray-50 p-3 rounded-xl border border-gray-200">
+            <div className="flex flex-wrap items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200">
               {SKIN_TONES.map((tone) => (
                 <button
                   key={tone.id}
                   onClick={() => setSkinTone(tone.id)}
-                  className={`w-9 h-9 rounded-full ${tone.colorBg} border-2 flex items-center justify-center transition-transform hover:scale-110 cursor-pointer ${
+                  className={`min-h-11 min-w-11 rounded-full ${tone.colorBg} border-2 flex items-center justify-center transition-transform hover:scale-110 cursor-pointer lg:min-h-0 lg:min-w-0 lg:h-9 lg:w-9 ${
                     skinTone === tone.id ? 'border-[#fe8956] ring-2 ring-[#fe8956]/30 scale-105' : 'border-white shadow-sm'
                   }`}
                   title={tone.label}
@@ -367,15 +404,15 @@ export default function VirtualModelStudio() {
         </div>
 
         {/* Right Preview Canvas Area */}
-        <div className="flex-1 bg-gray-50 flex flex-col items-center justify-center p-8 relative overflow-y-auto">
+        <div className="relative flex min-h-[560px] min-w-0 flex-1 flex-col items-center justify-center overflow-y-auto bg-gray-50 p-4 sm:min-h-[640px] sm:p-8 lg:min-h-auto lg:p-8">
           
-          <div className="absolute top-6 left-8">
+          <div className="absolute left-4 top-4 right-4 sm:left-8 sm:top-6">
             <h2 className="text-sm font-bold uppercase tracking-wider text-gray-600">Virtual Try-On Preview Canvas</h2>
             <p className="text-xs text-gray-400 mt-0.5">Torso: {targetGender} | Tone: {skinTone} | Vibe: {poseStyle}</p>
           </div>
 
           {/* Canvas Box */}
-          <div className="w-full max-w-lg aspect-[3/4] bg-white rounded-2xl border border-gray-200 shadow-xl flex flex-col items-center justify-center p-6 relative group overflow-hidden">
+          <div className="mt-20 flex aspect-[3/4] w-full max-w-lg flex-col items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-xl relative group sm:p-6 lg:mt-0">
             
             {isGenerating ? (
               <div className="flex flex-col items-center space-y-3">
@@ -415,7 +452,7 @@ export default function VirtualModelStudio() {
           </div>
 
           {/* Footer Info */}
-          <div className="absolute bottom-4 text-center text-xs text-gray-400 flex items-center space-x-1">
+          <div className="absolute bottom-4 flex items-center space-x-1 text-center text-xs text-gray-400">
             <span>Powered by StudioShot</span>
           </div>
 
@@ -425,7 +462,7 @@ export default function VirtualModelStudio() {
 
       {/* Full Screen Preview Modal */}
       {isFullScreenOpen && (generatedResult || productImage) && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div         className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
           <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center">
             <button
               onClick={() => setIsFullScreenOpen(false)}
@@ -443,6 +480,10 @@ export default function VirtualModelStudio() {
         </div>
       )}
 
+      <OutOfTokensModal
+        isOpen={isOutOfTokensModalOpen}
+        onClose={() => setIsOutOfTokensModalOpen(false)}
+      />
     </div>
   );
 }

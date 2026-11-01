@@ -2,65 +2,25 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 import { getAuthenticatedUser } from "@/lib/supabase-auth";
+import OpenAI from "openai";
+import { toFile } from "openai/uploads";
+import sharp from "sharp";
+import {
+  deductGenerationTokens,
+  hasGenerationTokens,
+  outOfTokensResponse,
+} from "@/lib/generation-tokens";
 
 export const runtime = "nodejs";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const geminiApiKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY;
 
 const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
 interface Feature {
   title: string;
   desc?: string;
-}
-
-interface GeminiGenerateContentResponse {
-  error?: { message?: string };
-  promptFeedback?: { blockReason?: string };
-  candidates?: Array<{
-    finishReason?: string;
-    finishMessage?: string;
-    content?: {
-      parts?: Array<{
-        text?: string;
-        inlineData?: { mimeType?: string; data?: string };
-      }>;
-    };
-    safetyRatings?: Array<{
-      category?: string;
-      probability?: string;
-      blocked?: boolean;
-    }>;
-  }>;
-}
-
-const GEMINI_IMAGE_MIME_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-  "image/heic",
-  "image/heif",
-  "image/gif",
-  "image/bmp",
-  "image/tiff",
-] as const;
-
-type GeminiImageMimeType = (typeof GEMINI_IMAGE_MIME_TYPES)[number];
-
-function isGeminiImageMimeType(
-  mimeType: string,
-): mimeType is GeminiImageMimeType {
-  return (GEMINI_IMAGE_MIME_TYPES as readonly string[]).includes(mimeType);
-}
-
-function getGeminiImageMimeType(mimeType: string): GeminiImageMimeType {
-  if (!isGeminiImageMimeType(mimeType)) {
-    throw new Error(`Unsupported image format for Gemini: ${mimeType}`);
-  }
-
-  return mimeType;
 }
 
 export async function POST(req: Request) {
@@ -71,6 +31,10 @@ export async function POST(req: Request) {
         { success: false, error: "Sign in before generating an infographic." },
         { status: 401 },
       );
+    }
+
+    if (!(await hasGenerationTokens(supabase, user.id))) {
+      return outOfTokensResponse();
     }
 
     const body = await req.json();
@@ -117,15 +81,16 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!geminiApiKey) {
+    if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         {
           success: false,
-          error: "GEMINI_API_KEY is not configured on the server.",
+          error: "OPENAI_API_KEY is not configured on the server.",
         },
         { status: 500 },
       );
     }
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     // 1. Fetch the signed-in user's product image from Supabase.
     const { data: sourceImage, error: sourceError } = await supabase.storage
@@ -138,11 +103,8 @@ export async function POST(req: Request) {
     }
 
     const sourceBuffer = Buffer.from(await sourceImage.arrayBuffer());
-    const mimeType = sourceImage.type || "image/png";
 
-    // Fetch the user's logo when supplied; never silently generate without it.
-    let logoInlineData: { mimeType: GeminiImageMimeType; data: string } | null =
-      null;
+    let logoBuffer: Buffer | null = null;
     if (brandLogoPath) {
       const { data: logoImage, error: logoError } = await supabase.storage
         .from("infographic-assets")
@@ -154,12 +116,7 @@ export async function POST(req: Request) {
         );
       }
 
-      const logoBuffer = Buffer.from(await logoImage.arrayBuffer());
-      const logoMime = getGeminiImageMimeType(logoImage.type || "image/png");
-      logoInlineData = {
-        mimeType: logoMime,
-        data: logoBuffer.toString("base64"),
-      };
+      logoBuffer = Buffer.from(await logoImage.arrayBuffer());
     }
 
     const featureLines =
@@ -193,135 +150,104 @@ export async function POST(req: Request) {
     )
       ? "1:1"
       : "3:4";
-    const prompt = [
-      `Create a premium, high-end product infographic for the ${category} category. Compose the design specifically for a ${aspectRatio} canvas with balanced, polished commercial art direction.`,
-      `PRODUCT REFERENCE: The first attached image is the user's product photo. Use it as the source of truth. Preserve the product's identity, shape, proportions, colors, packaging, and visible product branding. Present the product upright in its natural intended orientation, standing securely on a suitable surface or tasteful pedestal; do not show it lying down, floating, or at an impossible angle. Do not redesign, distort, crop, or cover it.`,
-      `SCENE AND BACKGROUND: Set the product against ${bgDescription}. Add a small number of tasteful, category-relevant visual elements that make the scene feel connected to the product and add depth. Keep these props and decorative details secondary, realistic, and clear of the product and all text.`,
-      `INFORMATION HIERARCHY: Reserve a clean header area. Set the exact product or brand name "${productTitle}" as the most prominent text, near the top center. Use a font style inspired by ${fontNameClean}; choose a font size readable at mobile scale, with clear contrast and comfortable spacing. Keep all text inside the canvas without clipping or overlap. Add a subtle divider only if it improves the layout.`,
-      logoInlineData
-        ? `USER BRAND LOGO: The second attached image is the logo uploaded by the user. Use this exact supplied logo artwork as the brand logo. Place it neatly in the header at the top-left or top-right, choosing the side opposite the product-name text when that gives the cleanest balance. Keep it smaller than the product name, fully visible, sharp, and inside the canvas with safe margins. Preserve its original shape, proportions, colors, and lettering; do not substitute, redraw, reinterpret, duplicate, or omit it.`
-        : `USER BRAND LOGO: No logo image was supplied. Do not invent a logo.`,
-      `Do not include marketplace, retailer, or platform names, logos, badges, or branding anywhere in the image. The selected marketplace only determines the output canvas shape; it is not the brand and must not appear as image text.`,
-      `FEATURE INFOGRAPHICS: Present the supplied feature copy as a small set of concise, legible callouts around the product, aligned to the left and right where space allows. Use simple relevant icons and fine pointer lines only when they improve clarity. Keep callouts visually consistent, avoid crowding, and never obscure the product.`,
-      `Use only the feature titles and descriptions below. Include each once, preserve their meaning, and do not invent specifications, benefits, slogans, or other claims:`,
-      featureLines,
-      `FINAL ART DIRECTION: Make the result feel cohesive, refined, and high quality, with deliberate spacing, clear text hierarchy, suitable font sizing, realistic product lighting, and harmonious colors. Return one finished image composed for the ${aspectRatio} canvas.`,
-    ].join("\n\n");
+   const prompt = [
+  `Create a premium, minimalistic product infographic for the "${category}" category. Design it like a world-class senior graphic designer, optimized specifically for a ${aspectRatio} canvas. Focus on a clean aesthetic, generous negative space, crisp layout, and zero clutter.`,
+  
+  `PRODUCT REFERENCE & PROFESSIONAL RETOUCHING: The first attached image is the primary product photo. Treat it as the absolute source of truth for its core identity, shape, proportions, colors, packaging, and visible branding. Thoroughly clean and restore the product surface: remove any dust, dirt, grime, smudges, stains, or minor surface scratches present in the source image, making the product look brand new, polished, and pristine. Present the product upright in its natural intended orientation, standing securely on a sleek pedestal or minimal surface. Do not distort, crop, cover, or alter its structural geometry.`,
+  
+  `MINIMALIST SCENE & CATEGORY-SPECIFIC PROPS: Set the product against ${bgDescription}. Intelligently incorporate subtle, highly relevant micro-elements tailored specifically to the "${category}" category (e.g., natural botanical shadows for skincare, soft satin textures for luxury items, clean water droplets, or minimal stone textures). Keep all decorative props secondary, highly refined, minimal, and completely out of the way of the product and text.`,
+  
+  `INFORMATION HIERARCHY: Reserve a clean, uncluttered header area. Set the exact title "${productTitle}" as the primary heading near the top using a modern typography style inspired by ${fontNameClean}. Ensure high contrast, perfect letter spacing, and crisp mobile readability without clipping or overlapping.`,
+  
+  logoBuffer
+    ? `USER BRAND LOGO: The second attached image is the user's official brand logo. As a pro designer, integrate this exact logo artwork naturally into the composition at the most visually balanced and suitable location (e.g., top-left, top-right header, or subtly anchored near the bottom/pedestal). Preserve its exact shape, proportions, colors, and typography. Ensure it remains crisp, elegant, fully legible, and perfectly aligned.`
+    : `USER BRAND LOGO: No logo image was supplied. Do not invent, insert, or generate any placeholder logos.`,
+  
+  `Do not include any third-party marketplace, retailer, or platform names, badges, or logos anywhere in the design.`,
+  
+  `FEATURE INFOGRAPHICS: Layout the feature copy below as clean, minimalist callout badges or sleek bullet points around the product. Use refined, modern icons and fine pointer lines only where necessary. Maintain visual harmony, equal margins, and absolute clarity.`,
+  
+  `Use only the supplied feature copy below. Do not fabricate extra claims or text:`,
+  
+  featureLines,
+  
+  `FINAL ART DIRECTION: Produce an ultra-sleek, professional graphic designer output with realistic soft studio lighting, crisp typography hierarchy, harmonious color palette, and zero visual clutter. Return only the finished image for the ${aspectRatio} canvas.`,
+].join("\n\n");
 
-    const generationResponse = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": geminiApiKey,
+    const inputImages = [
+      await toFile(
+        await sharp(sourceBuffer).png().toBuffer(),
+        "product.png",
+        { type: "image/png" },
+      ),
+    ];
+    if (logoBuffer) {
+      inputImages.push(
+        await toFile(
+          await sharp(logoBuffer).png().toBuffer(),
+          "brand-logo.png",
+          { type: "image/png" },
+        ),
+      );
+    }
+
+    let generationError: string | null = null;
+    const generationResponse = await openai.images
+      .edit(
+        {
+          model: "gpt-image-2.5-sunburst",
+          image: inputImages,
+          prompt,
+          size: aspectRatio === "1:1" ? "1024x1024" : "1024x1536",
+          output_format: "png",
         },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: prompt },
-                { text: "Product photo reference:" },
-                {
-                  inlineData: {
-                    mimeType: getGeminiImageMimeType(mimeType),
-                    data: sourceBuffer.toString("base64"),
-                  },
-                },
-                ...(logoInlineData
-                  ? [
-                      { text: "User-uploaded brand logo reference. Use this logo in the final image as instructed:" },
-                      {
-                        inlineData: {
-                          mimeType: logoInlineData.mimeType,
-                          data: logoInlineData.data,
-                        },
-                      },
-                    ]
-                  : []),
-              ],
-            },
-          ],
-          generationConfig: {
-            responseModalities: ["IMAGE"],
-            imageConfig: { aspectRatio },
-          },
-        }),
-        signal: AbortSignal.timeout(120_000),
-      },
-    );
+        { signal: AbortSignal.timeout(120_000) },
+      )
+      .catch((error: unknown) => {
+        if (!(error instanceof OpenAI.APIError)) {
+          throw error;
+        }
 
-    const responseText = await generationResponse.text();
-    let generationData: GeminiGenerateContentResponse;
-    try {
-      generationData = JSON.parse(responseText);
-    } catch {
-      console.error(
-        "Gemini returned an unreadable infographic response:",
-        generationResponse.status,
-      );
+        generationError = error.message || "OpenAI image generation failed.";
+        console.error("OpenAI infographic generation request failed:", {
+          status: error.status,
+          message: generationError,
+        });
+        return null;
+      });
+
+    if (!generationResponse) {
       return NextResponse.json(
-        { success: false, error: "Gemini returned an unreadable response. Please try again." },
+        {
+          success: false,
+          error: generationError || "OpenAI image generation failed.",
+        },
         { status: 502 },
       );
     }
 
-    if (!generationResponse.ok) {
-      const message =
-        generationData.error?.message || "Gemini image generation failed.";
-      console.error("Gemini infographic generation request failed:", {
-        status: generationResponse.status,
-        message,
-      });
+    const imageData = generationResponse.data?.[0]?.b64_json;
+    if (!imageData) {
+      console.error("OpenAI returned no infographic image.");
       return NextResponse.json(
-        { success: false, error: message },
-        { status: 502 },
-      );
-    }
-
-    const imageOutput = generationData.candidates
-      ?.flatMap((candidate) => candidate.content?.parts ?? [])
-      .find((part) => part.inlineData?.data)?.inlineData;
-
-    if (!imageOutput?.data) {
-      const finishReason = generationData.candidates?.[0]?.finishReason;
-      const finishMessage = generationData.candidates?.[0]?.finishMessage;
-      const blockReason = generationData.promptFeedback?.blockReason;
-      const textResponse = generationData.candidates?.[0]?.content?.parts
-        ?.map((part) => part.text)
-        .filter((text): text is string => Boolean(text))
-        .join("\n");
-      const reason = finishMessage || blockReason || finishReason || textResponse;
-      const message = reason
-        ? `Gemini did not return an image: ${reason}`
-        : "Gemini did not return an image. Please try again.";
-      console.error("Gemini returned no infographic image:", {
-        blockReason,
-        finishReason,
-        finishMessage,
-        textResponse,
-        safetyRatings: generationData.candidates?.[0]?.safetyRatings,
-      });
-      return NextResponse.json(
-        { success: false, error: message },
+        {
+          success: false,
+          error: "OpenAI did not return an image. Please try again.",
+        },
         { status: 422 },
       );
     }
 
-    const imageBuffer = Buffer.from(imageOutput.data, "base64");
-    const outputMimeType = imageOutput.mimeType || "image/jpeg";
-    const outputExtension =
-      outputMimeType === "image/png"
-        ? "png"
-        : outputMimeType === "image/jpeg"
-          ? "jpg"
-          : null;
-
-    if (!outputExtension) {
-      throw new Error(
-        `Gemini returned an unsupported image format: ${outputMimeType}`,
-      );
-    }
+    const imageBuffer = await sharp(Buffer.from(imageData, "base64"))
+      .resize({
+        width: aspectRatio === "1:1" ? 1024 : 768,
+        height: 1024,
+        fit: "cover",
+      })
+      .png()
+      .toBuffer();
+    const outputMimeType = "image/png";
+    const outputExtension = "png";
 
     const outputFileName = `${user.id}/generated/infographic-${randomUUID()}.${outputExtension}`;
     const bucketNames = [
@@ -367,6 +293,10 @@ export async function POST(req: Request) {
           "No compatible storage bucket was available for the generated infographic.",
         )
       );
+    }
+
+    if (!(await deductGenerationTokens(supabase, user.id))) {
+      return outOfTokensResponse();
     }
 
     return NextResponse.json({
