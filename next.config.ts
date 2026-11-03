@@ -1,10 +1,7 @@
-import type { NextConfig } from "next";
-import path from "path";
-
-const nextConfig: NextConfig = {
-  turbopack: {
-    root: path.resolve(process.cwd()),
-  },
+/** @type {import('next').Next.jsConfig} */
+const nextConfig = {
+  // Next.js 13/14/15 configuration for packages with native bindings
+  serverExternalPackages: ['canvas', 'sharp'],
 };
 
-export default nextConfig;
+module.exports = nextConfig;
