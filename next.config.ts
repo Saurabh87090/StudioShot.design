@@ -1,7 +1,8 @@
-/** @type {import('next').Next.jsConfig} */
-const nextConfig = {
-  // Next.js 13/14/15 configuration for packages with native bindings
-  serverExternalPackages: ['canvas', 'sharp'],
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  // Yeh line Next.js ko rokti hai sharp ko bundle karne se
+  serverExternalPackages: ['sharp'],
 };
 
-module.exports = nextConfig;
+export default nextConfig;
