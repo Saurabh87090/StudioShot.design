@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { getAuthenticatedUser } from "@/lib/supabase-auth";
 import OpenAI from "openai";
 import { toFile } from "openai/uploads";
-import sharp from "sharp";
+import { Jimp } from "jimp";
 import {
   deductGenerationTokens,
   hasGenerationTokens,
@@ -99,7 +99,8 @@ export async function POST(req: Request) {
   "Return only the finished image.",
 ].join(" ");
 
-    const sourcePng = await sharp(sourceBuffer).png().toBuffer();
+    const sourceImage = await Jimp.read(sourceBuffer);
+    const sourcePng = await sourceImage.getBuffer("image/png");
     const aspectRatioSizes: Record<string, { width: number; height: number }> = {
       "1:1": { width: 1024, height: 1024 },
       "3:4": { width: 768, height: 1024 },
@@ -130,10 +131,9 @@ export async function POST(req: Request) {
       throw new Error("OpenAI did not return a generated image.");
     }
 
-    const imageBuffer = await sharp(Buffer.from(imageData, "base64"))
-      .resize({ ...targetSize, fit: "cover" })
-      .png()
-      .toBuffer();
+    const generatedImage = await Jimp.read(Buffer.from(imageData, "base64"));
+    generatedImage.cover({ w: targetSize.width, h: targetSize.height });
+    const imageBuffer = await generatedImage.getBuffer("image/png");
     const contentType = "image/png";
 
     const { processedImageUrl } = await saveListingToSupabase({

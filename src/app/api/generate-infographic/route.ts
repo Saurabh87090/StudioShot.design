@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { getAuthenticatedUser } from "@/lib/supabase-auth";
 import OpenAI from "openai";
 import { toFile } from "openai/uploads";
-import sharp from "sharp";
+import { Jimp } from "jimp";
 import {
   deductGenerationTokens,
   hasGenerationTokens,
@@ -176,7 +176,7 @@ export async function POST(req: Request) {
 
     const inputImages = [
       await toFile(
-        await sharp(sourceBuffer).png().toBuffer(),
+        await (await Jimp.read(sourceBuffer)).getBuffer("image/png"),
         "product.png",
         { type: "image/png" },
       ),
@@ -184,7 +184,7 @@ export async function POST(req: Request) {
     if (logoBuffer) {
       inputImages.push(
         await toFile(
-          await sharp(logoBuffer).png().toBuffer(),
+          await (await Jimp.read(logoBuffer)).getBuffer("image/png"),
           "brand-logo.png",
           { type: "image/png" },
         ),
@@ -238,14 +238,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const imageBuffer = await sharp(Buffer.from(imageData, "base64"))
-      .resize({
-        width: aspectRatio === "1:1" ? 1024 : 768,
-        height: 1024,
-        fit: "cover",
-      })
-      .png()
-      .toBuffer();
+    const generatedImage = await Jimp.read(Buffer.from(imageData, "base64"));
+    generatedImage.cover({
+      w: aspectRatio === "1:1" ? 1024 : 768,
+      h: 1024,
+    });
+    const imageBuffer = await generatedImage.getBuffer("image/png");
     const outputMimeType = "image/png";
     const outputExtension = "png";
 

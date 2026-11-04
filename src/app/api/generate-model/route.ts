@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import OpenAI from "openai";
 import { toFile } from "openai/uploads";
-import sharp from "sharp";
+import { Jimp } from "jimp";
 import {
   deductGenerationTokens,
   hasGenerationTokens,
@@ -151,17 +151,19 @@ export async function POST(request: Request) {
 ].join(" ");
 
     const sourceBuffer = Buffer.from(await garmentBlob.arrayBuffer());
-const sourceJpeg = await sharp(sourceBuffer)
-  .rotate()
-  .resize({
-    width: 2048,
-    height: 2048,
-    fit: "inside",
-    withoutEnlargement: true,
-  })
-  .flatten({ background: "#ffffff" })
-  .jpeg({ quality: 85, mozjpeg: true })
-  .toBuffer();
+    const sourceImage = await Jimp.read(sourceBuffer);
+    if (sourceImage.width > 2048 || sourceImage.height > 2048) {
+      sourceImage.scaleToFit({ w: 2048, h: 2048 });
+    }
+    const whiteBackground = new Jimp({
+      width: sourceImage.width,
+      height: sourceImage.height,
+      color: 0xffffffff,
+    });
+    whiteBackground.composite(sourceImage);
+    const sourceJpeg = await whiteBackground.getBuffer("image/jpeg", {
+      quality: 85,
+    });
 const generationResponse = await openai.images.edit(
   {
     model: "gpt-image-2.5-sunburst",
